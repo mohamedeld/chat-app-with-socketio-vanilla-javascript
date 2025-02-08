@@ -1,6 +1,7 @@
 const express = require("express");
 const {Server} = require("socket.io");
 const { createServer } = require("http");
+const namespaces = require("./data/namespaces");
 
 
 const app = express();
@@ -10,12 +11,17 @@ app.use(express.static(__dirname + '/public'))
 
 const io = new Server(server);
 io.on('connection', (socket) => {
-  socket.emit("welcome",{
-    message:"welcome from server"
-  });
-  socket.on("message",(res)=>{
-    io.emit("messageToClient",{message:res?.data})
+  socket.join("chat");
+  io.of("/").to("chat").emit("welcomeToChatRoom",{})
+
+
+  socket.emit("welcome",{message:"welcome from server"});
+  socket.on("clientIsConnect",data=>{
+    console.log(data);
   })
+
+  
+  socket.emit("nsList",namespaces)
 });
 
 server.listen(3000, () => {
